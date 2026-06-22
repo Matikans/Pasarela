@@ -18,17 +18,18 @@ model User {
   wallet_address String   @unique
   createdAt DateTime @default(now())
 
-  transactions Transaction[]
+  transactions Transactions[]
 }
 
-model Transaction {
+model Transactions {
   id       String   @id @default(uuid())
   concept   String
   amount    Float
-  blockchain_tx_hash String   @unique
+  status    String
+  blockchain_tx_hash String?   @unique
   createdAt DateTime @default(now())
 
   
-  userId   String
-  user     User     @relation(fields: [userId], references: [id])
+  authorId   String
+  author     User     @relation(fields: [authorId], references: [id])
 }
