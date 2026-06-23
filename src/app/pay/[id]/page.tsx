@@ -8,6 +8,7 @@ import { Wallet, CheckCircle, Loader2 } from 'lucide-react';
 export default function PaymentPage({ params }: { params: { id: string } }) {
     const resolvedParams = useParams();
     const id = resolvedParams?.id; // Aseguramos que 'id' esté disponible antes de usarlo
+    console.log("ID de la URL:", id); // Debugging: Verifica que el ID se esté leyendo correctamente
     
   const [txData, setTxData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -51,10 +52,17 @@ export default function PaymentPage({ params }: { params: { id: string } }) {
       </div>
     );
   }
+  console.log("txData:", txData); // Debugging: Verifica qué datos se están recibiendo
 
   // Generamos un string de pago simulado para el QR (puede ser una URL o una firma Web3)
-  const qrValue = `ethereum:${txData.merchantWallet}@8453/transfer?address=${txData.merchantWallet}&uint256=${txData.amount}`;
+// 1. Esta es la dirección del "sistema" de USDC en la red de Base (es fija, no cambia nunca)
+const USDC_CONTRACT_BASE = "0x833589fCD6eDb6E08f4c7C32D4f71b54bda02913";
 
+// 2. Multiplicamos por 1.000.000 porque la blockchain no entiende puntos ni comas (ej: 10.50 pasan a ser 10500000)
+const parsedAmount = Math.round(txData.amount * 1_000_000);
+
+// 3. Tu QR real usando la wallet del comercio que tenés guardada en tu base de datos
+const qrValue = `ethereum:${USDC_CONTRACT_BASE}@8453/transfer?address=${txData.author.wallet_address}&uint256=${parsedAmount}`;
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 p-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-100 p-6 text-center">
