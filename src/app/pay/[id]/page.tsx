@@ -1,27 +1,47 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,} from 'react';
+import { useParams } from 'next/navigation';
 import { QRCodeSVG } from 'qrcode.react';
 import { Wallet, CheckCircle, Loader2 } from 'lucide-react';
 
 export default function PaymentPage({ params }: { params: { id: string } }) {
+    const resolvedParams = useParams();
+    const id = resolvedParams?.id; // Aseguramos que 'id' esté disponible antes de usarlo
+    
   const [txData, setTxData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+  
   // Simulamos que vamos a buscar los datos de la transacción a tu backend usando el ID de la URL
   useEffect(() => {
-    // Acá en el próximo paso meteremos el fetch real a tu API GET /api/transactions/[id]
-    setTimeout(() => {
-      setTxData({
-        id: params.id,
-        amount: 15.50,
-        concept: "2 Cafés + Facturas 🥐",
-        status: "pending",
-        merchantWallet: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
-      });
-      setLoading(false);
-    }, 1200);
-  }, [params.id]);
+    // 1. Si no hay ID todavía, no hacemos nada y esperamos a que cargue
+    if (!id) return;
+
+    async function fetchTransaction() {
+      try {
+        setLoading(true);
+        setError(null); // Limpiamos errores previos si los hubiera
+        const res = await fetch(`/api/transactions/${id}`);
+        const data = await res.json();
+
+        if (data.success && data.transaction) {
+          setTxData(data.transaction);
+        } else {
+          setError("Transacción no encontrada o error en el servidor");
+        }
+      } catch (error) {
+        console.error("Error fetching transaction:", error);
+        setError("Error de red al intentar obtener la transacción");
+      } finally {
+        // 2. El bloque 'finally' asegura que pase lo que pase, deje de cargar
+        setLoading(false);
+      }
+    }
+
+    fetchTransaction();
+  }, [id]); // El efecto se vuelve a ejecutar si el 'id' cambia
 
   if (loading) {
     return (
