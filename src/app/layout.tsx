@@ -1,8 +1,7 @@
-'use client';
-
-import { PrivyProvider } from '@privy-io/react-auth';
 import { Geist, Geist_Mono } from "next/font/google";
+import { Providers } from "@/components/Providers";
 import "./globals.css";
+import type { Metadata } from "next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,31 +13,24 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Esto es lo que se rompe si usas 'use client' en el layout
+export const metadata: Metadata = {
+  title: "Tu Pasarela Onchain",
+  description: "Procesa pagos en Base de forma simple",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID || '';
-
   return (
     <html lang="es">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <PrivyProvider
-          appId={appId}
-          config={{
-            // Definimos que el login sea principalmente con Google
-            loginMethods: ['google'],
-            // Le indicamos que cree automáticamente una billetera integrada (embedded) si el usuario no tiene una
-            embeddedWallets: {
-              ethereum: {
-                createOnLogin: 'users-without-wallets',
-            }
-            },
-          }}
-        >
+        {/* Envolvemos la app con el componente de cliente que creamos */}
+        <Providers>
           {children}
-        </PrivyProvider>
+        </Providers>
       </body>
     </html>
   );
